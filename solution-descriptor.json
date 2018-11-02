@@ -1,0 +1,118 @@
+{
+  "ovfPropertySubs": {
+    "": "{{{sddc:vcenter-fqdn}}}",
+    "": "{{{sddc:automation-user}}}",
+    "": "{{{sddc:automation-password}}}"
+  },
+  "sddcNetworking": {
+    "managementGroups": [
+      {
+        "name": "trend-mgt",
+        "vms": [
+          "{{{ovf:id=TrendMicro-DeepSecurityManagerAppliance}}}"
+        ]
+      }
+    ],
+    "workloadGroups": [
+      {
+        "name": "trend-wk",
+        "type": "vm",
+        "vms": [
+          "{{{ovf:id=TrendMicro-DeepSecurityManagerAppliance}}}"
+        ]
+      }
+    ],
+    "services": [
+      {
+        "name": "trend-agent",
+        "serviceEntry": {
+          "type": "tcp",
+          "sourcePorts": "",
+          "destinationPorts": "4118"
+        }
+      },
+      {
+        "name": "trend-console",
+        "serviceEntry": {
+          "type": "tcp",
+          "sourcePorts": "",
+          "destinationPorts": "4119"
+        }
+      },
+      {
+        "name": "trend-heartbeat",
+        "serviceEntry": {
+          "type": "tcp",
+          "sourcePorts": "",
+          "destinationPorts": "4120"
+        }
+      }
+    ],
+    "managementFirewallRules": [
+      {
+        "name": "trend-vcenter",
+        "source": "trend-mgt",
+        "destination": "vCenter",
+        "services": [
+          "ICMP",
+          "SSO",
+          "HTTPS"
+        ],
+        "action": "allow"
+      }
+    ],
+    "computeFirewallRules": [
+      {
+        "name": "trend-dsm-out",
+        "source": "trend-wk",
+        "destination": "Any",
+        "services": [
+          "Any"
+        ],
+        "action": "allow",
+        "appliedTo": "Internet Interface"
+      },
+      {
+        "name": "trend-dsm-in",
+        "source": "Any",
+        "destination": "trend-wk",
+        "services": [
+          "HTTPS"
+        ],
+        "action": "allow",
+        "appliedTo": "Internet Interface"
+      },
+      {
+        "name": "trend-dsm-vpc-out",
+        "source": "trend-wk",
+        "destination": "Connected VPC Prefixes",
+        "services": [
+          "trend-agent",
+          "MySQL"
+        ],
+        "action": "allow",
+        "appliedTo": "VPC Interface"
+      },
+      {
+        "name": "trend-dsm-vpc-in",
+        "source": "Connected VPC Prefixes",
+        "destination": "trend-wk",
+        "services": [
+          "HTTPS",
+          "trend-console",
+          "trend-heartbeat"
+        ],
+        "action": "allow",
+        "appliedTo": "VPC Interface"
+      }
+    ],
+    "natRules": [
+      {
+        "name": "trend-portal",
+        "service": "HTTPS",
+        "port": 443,
+        "vm": "{{{ovf:id=TrendMicro-DeepSecurityManagerAppliance}}}"
+      }
+    ]
+  }
+}
